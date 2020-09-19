@@ -1,12 +1,13 @@
 package com.yobitrust.HachCovid19Back.Controllers;
 import com.yobitrust.HachCovid19Back.Models.Patient;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.*;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.AntecedentsMedicaux.*;
-import com.yobitrust.HachCovid19Back.Models.PatientParts.CaracCliniques;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.CaracteristiquesCliniques.*;
-import com.yobitrust.HachCovid19Back.Models.PatientParts.Diagnostic;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.ExamRadioParaCli.ECG;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.ExamRadioParaCli.TdmTho;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.ExamRadioParaCli.Thorax;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.Exam_Bio.*;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.ExpoRisque.*;
-import com.yobitrust.HachCovid19Back.Models.PatientParts.GeneralInformation;
-import com.yobitrust.HachCovid19Back.Models.PatientParts.HabitudesDeVie;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.admission.AdmHHop;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.admission.AdmHop;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.Pcr;
@@ -17,13 +18,14 @@ import com.yobitrust.HachCovid19Back.Models.RequestModels.*;
 import com.yobitrust.HachCovid19Back.Repositories.PatientRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
 
 @RestController
 public class PatientController {
@@ -33,6 +35,8 @@ public class PatientController {
     public Integer findDiagnosticByDate(List<Diagnostic> diagnostics, Date date) {
         for (Integer i =0;i<diagnostics.size();i++){
             Date date1=diagnostics.get(i).getDateDiag();
+            //System.out.println(date);
+            //System.out.println(date1);
             if(date1.compareTo(date)==0)
                 return i;
         }
@@ -315,7 +319,7 @@ public class PatientController {
         patientRepository.save(patient);
         return  ResponseEntity.ok(patient.getDiagnostics().get(index));
     }
-    @PostMapping("add-carac-cliniques/{cin}")
+    @PostMapping("/add-carac-cliniques/{cin}")
     public ResponseEntity addCaracCliniques(@PathVariable Integer cin , @RequestBody CaracCliniquesModel model){
         Patient patient = patientRepository.findByCin(cin);
         ModelMapper mapper= new ModelMapper();
@@ -410,6 +414,132 @@ public class PatientController {
 
     }
 
+    @PostMapping("/add-examen-cli/{cin}")
+    public ResponseEntity addExamenCli(@PathVariable Integer cin , @RequestBody ExamenCliModel model){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        Integer index = findDiagnosticByDate(patient.getDiagnostics(),model.getDateDiag());
+        if(index ==-1){
+            return ResponseEntity.ok("No diagnostoc added on "+model.getDateDiag());
+        }
+        ExamenCli examenCli=mapper.map(model,ExamenCli.class);
+        patient.getDiagnostics().get(index).setExamenCli(examenCli);
+        patientRepository.save(patient);
+        return  ResponseEntity.ok(patient.getDiagnostics().get(index));
 
-}
+    }
+
+    @PostMapping("/add-examen-radio-paracli/{cin}")
+    public ResponseEntity addExamenRadioParaCli(@PathVariable Integer cin ,@RequestBody ExamRadioParaCliModel model){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        Integer index = findDiagnosticByDate(patient.getDiagnostics(),model.getDateDiag());
+        if(index ==-1){
+            return ResponseEntity.ok("No diagnostoc added on "+model.getDateDiag());
+        }
+        if(model.getType().equals("Thorax")){
+            Thorax thorax=mapper.map(model,Thorax.class);
+            //patient.getDiagnostics().get(index).setExamRadio_paraCli(new ExamRadio_ParaCli());
+            patient.getDiagnostics().get(index).getExamRadio_paraCli().getThoraxes().add(thorax);
+        }
+        if(model.getType().equals("TdmTho")){
+            TdmTho tdmTho=mapper.map(model,TdmTho.class);
+            patient.getDiagnostics().get(index).getExamRadio_paraCli().getTdmThos().add(tdmTho);
+        }
+        if(model.getType().equals("ECG")){
+            ECG ecg=mapper.map(model,ECG.class);
+            patient.getDiagnostics().get(index).getExamRadio_paraCli().getEcgs().add(ecg);
+        }
+        patientRepository.save(patient);
+        return ResponseEntity.ok(patient.getDiagnostics().get(index));
+    }
+    @PostMapping("add-evaluation-finale/{cin}")
+    public ResponseEntity addEvaluationFinale(@PathVariable Integer cin, @RequestBody EvaluationModel model){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        Integer index = findDiagnosticByDate(patient.getDiagnostics(),model.getDateDiag());
+        if(index ==-1){
+            return ResponseEntity.ok("No diagnostoc added on "+model.getDateDiag());
+        }
+        EvaluationFinale evaluation =mapper.map(model,EvaluationFinale.class);
+        patient.getDiagnostics().get(index).setEvaluationFinale(evaluation);
+        patientRepository.save(patient);
+        return ResponseEntity.ok(patient.getDiagnostics().get(index));
+    }
+
+    @PostMapping("/add-examen-bio/{cin}")
+    public ResponseEntity addExamBio(@PathVariable Integer cin , @RequestBody ExamBioModel model){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        Integer index = findDiagnosticByDate(patient.getDiagnostics(),model.getDateDiag());
+        if(index ==-1){
+            return ResponseEntity.ok("No diagnostoc added on "+model.getDateDiag());
+        }
+        if(model.getType().equals("NFS")){
+            NFS nfs =mapper.map(model,NFS.class);
+            patient.getDiagnostics().get(index).getExamBio().getNfs().add(nfs);
+        }
+        if(model.getType().equals("BilanRenal")){
+            BilanRenal bilanRenal =mapper.map(model,BilanRenal.class);
+            patient.getDiagnostics().get(index).getExamBio().getBilanRenal().add(bilanRenal);
+        }
+        if(model.getType().equals("GDSA")){
+            GDSA gdsa= mapper.map(model,GDSA.class);
+            patient.getDiagnostics().get(index).getExamBio().getGdsas().add(gdsa);
+        }
+        if(model.getType().equals("BilanHepa")){
+            BilanHepa bilanHepa=mapper.map(model,BilanHepa.class);
+            patient.getDiagnostics().get(index).getExamBio().getBilanHepa().add(bilanHepa);
+        }
+        if(model.getType().equals("Ionogra")){
+            Ionogra ionogra=mapper.map(model,Ionogra.class);
+            patient.getDiagnostics().get(index).getExamBio().getIonogras().add(ionogra);
+        }
+        patientRepository.save(patient);
+        return  ResponseEntity.ok(patient.getDiagnostics().get(index));
+    }
+
+    @PostMapping (value = "add-examen-bio-image/{cin}" )
+    public ResponseEntity addImage(@RequestParam("file")MultipartFile file , @RequestParam("dateDiag")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Date dateDiag, @PathVariable Integer cin,@RequestParam("datePr")  @DateTimeFormat(pattern = "yyyy-mm-dd") Date datePr) throws IOException {
+
+        System.out.println(dateDiag);
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        Integer index = findDiagnosticByDate(patient.getDiagnostics(),dateDiag);
+        if(index ==-1){
+            return ResponseEntity.ok("No diagnostoc added on "+dateDiag);
+        }
+
+        String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+        String bilanPath="src/main/resources/bilans/"+UUID.randomUUID().toString()+'.'+extension;
+        File file1= new File(bilanPath);
+        file1.createNewFile();
+        FileOutputStream fout =new FileOutputStream(file1);
+        fout.write(file.getBytes());
+        fout.close();
+        patient.getDiagnostics().get(index).getExamBio().getAutreBilans().add(new AutreBilan(datePr,bilanPath));
+        patientRepository.save(patient);
+        return ResponseEntity.ok(patient.getDiagnostics().get(index));
+
+         }
+
+    }
+
+
+
 

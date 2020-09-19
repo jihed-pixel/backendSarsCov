@@ -12,19 +12,37 @@ public class Diagnostic {
     private List<ConfDiag> confDiags;
     private List<Admission> admissions;
     private CaracCliniques caracCliniques;
+    private ExamenCli examenCli;
+    private ExamRadio_ParaCli examRadio_paraCli;
+    private EvaluationFinale evaluationFinale;
+    private ExamBio examBio;
 
     public Diagnostic() {
 
         this.confDiags= new ArrayList<>();
         this.admissions=new ArrayList<>();
+        this.examRadio_paraCli=new ExamRadio_ParaCli();
+        this.examBio= new ExamBio();
     }
 
-    public Diagnostic(Date dateDiag, ExpoRisque expoRisque,List<ConfDiag> confDiags,List<Admission> admissions,CaracCliniques caracCliniques) {
+    public Diagnostic(Date dateDiag, ExpoRisque expoRisque,List<ConfDiag> confDiags,List<Admission> admissions,CaracCliniques caracCliniques,ExamenCli examenCli,ExamRadio_ParaCli examRadio_paraCli,EvaluationFinale evaluationFinale,ExamBio examBio) {
         this.dateDiag = dateDiag;
         this.expoRisque = expoRisque;
         this.confDiags=confDiags;
         this.admissions=admissions;
         this.caracCliniques=caracCliniques;
+        this.examenCli=examenCli;
+        this.examRadio_paraCli=examRadio_paraCli;
+        this.evaluationFinale=evaluationFinale;
+        this.examBio=examBio;
+    }
+
+    public ExamBio getExamBio() {
+        return examBio;
+    }
+
+    public void setExamBio(ExamBio examBio) {
+        this.examBio = examBio;
     }
 
     public CaracCliniques getCaracCliniques() {
@@ -65,5 +83,30 @@ public class Diagnostic {
 
     public void setExpoRisque(ExpoRisque expoRisque) {
         this.expoRisque = expoRisque;
+    }
+
+    public ExamenCli getExamenCli() {
+        return examenCli;
+    }
+
+    public void setExamenCli(ExamenCli examenCli) {
+        this.examenCli = examenCli;
+    }
+
+    public ExamRadio_ParaCli getExamRadio_paraCli() {
+        return examRadio_paraCli;
+    }
+
+    public EvaluationFinale getEvaluationFinale() {
+        return evaluationFinale;
+    }
+
+    public void setEvaluationFinale(EvaluationFinale evaluationFinale) {
+        this.evaluationFinale = evaluationFinale;
+    }
+
+    public void setExamRadio_paraCli(ExamRadio_ParaCli examRadio_paraCli) {
+        this.examRadio_paraCli = examRadio_paraCli;
+
     }
 }
