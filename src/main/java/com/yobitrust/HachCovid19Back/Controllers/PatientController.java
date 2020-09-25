@@ -14,6 +14,8 @@ import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.Pcr;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.RapideAc;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.RapideAg;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.Serologie;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.traitement.Dosage;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.traitement.TraitementPart;
 import com.yobitrust.HachCovid19Back.Models.RequestModels.*;
 import com.yobitrust.HachCovid19Back.Repositories.PatientRepository;
 import org.modelmapper.ModelMapper;
@@ -41,6 +43,14 @@ public class PatientController {
                 return i;
         }
         return  -1;
+    }
+    public Integer findTraitementByDate(List<Dosage>dosages ,Date date){
+        for(Integer i =0;i<dosages.size();i++){
+            Date date1 =dosages.get(i).getDateD();
+            if(date1.compareTo(date)==0)
+                return  i ;
+        }
+        return -1;
     }
 
     @PostMapping("/addPatient")
@@ -514,7 +524,7 @@ public class PatientController {
     @PostMapping (value = "add-examen-bio-image/{cin}" )
     public ResponseEntity addImage(@RequestParam("file")MultipartFile file , @RequestParam("dateDiag")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Date dateDiag, @PathVariable Integer cin,@RequestParam("datePr")  @DateTimeFormat(pattern = "yyyy-mm-dd") Date datePr) throws IOException {
 
-        System.out.println(dateDiag);
+        //System.out.println(dateDiag);
         Patient patient = patientRepository.findByCin(cin);
         ModelMapper mapper= new ModelMapper();
         if (patient == null){
@@ -538,6 +548,77 @@ public class PatientController {
 
          }
 
+    @PostMapping("add-traitement/{cin}")
+    public ResponseEntity addTraitement(@RequestBody TraitementModel model, @PathVariable Integer cin ){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        Integer index = findDiagnosticByDate(patient.getDiagnostics(),model.getDateDiag());
+        if(index ==-1){
+            return ResponseEntity.ok("No diagnostoc added on "+model.getDateDiag());
+        }
+
+        Dosage dosage= mapper.map(model,Dosage.class);
+        if(patient.getDiagnostics().get(index).getTraitement().getTraitementPart()==null){
+           TraitementPart traitementPart= new TraitementPart();
+           traitementPart.getDosages().add(dosage);
+           HashMap<String,TraitementPart >test=new HashMap<>();
+           patient.getDiagnostics().get(index).getTraitement().setTraitementPart(test);
+           patient.getDiagnostics().get(index).getTraitement().getTraitementPart().put(model.getTrai(),traitementPart);
+
+
+        }
+        if(patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai())==null){
+
+
+            List<Dosage> dosages= new ArrayList<>();
+            dosages.add(dosage);
+            TraitementPart traitementPart= new TraitementPart();
+            traitementPart.setDosages(dosages);
+            if(patient.getDiagnostics().get(index).getTraitement() != null )System.out.println(traitementPart.getDosages().size());
+            patient.getDiagnostics().get(index).getTraitement().getTraitementPart().put(model.getTrai(),traitementPart);
+
+        }
+        if(patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai())!=null){
+            System.out.println(model.getDateD());
+            Integer dateDintex= findTraitementByDate(patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai()).getDosages(),model.getDateD());
+           if(dateDintex ==-1)
+            patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai()).getDosages().add(dosage);
+           else patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai()).getDosages().set(dateDintex,dosage);
+           // System.out.println(dosage.getDateF());
+
+        }
+
+        if(!model.getPactt().isEmpty())
+            patient.getDiagnostics().get(index).getTraitement().setPactt(model.getPactt());
+        patientRepository.save(patient);
+        Integer last = patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai()).getDosages().size()-1;
+        return  ResponseEntity.ok(patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai()).getDosages().get(last)) ;
+
+    }
+    @PostMapping("get-traitment/{cin}")
+
+    public ResponseEntity getTraitment(@PathVariable Integer cin, @RequestBody GetTraitmentModel model){
+        Patient patient = patientRepository.findByCin(cin);
+        //ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        Integer index = findDiagnosticByDate(patient.getDiagnostics(),model.getDateDiag());
+        if(index ==-1){
+            return ResponseEntity.ok("No diagnostoc added on "+model.getDateDiag());
+        }
+        if(patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai())!=null){
+            Integer last = patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai()).getDosages().size()-1;
+            return  ResponseEntity.ok(patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai()).getDosages().get(last)) ;
+        }
+        else return ResponseEntity.ok("Aucun taitment");
+
+
+
+    }
     }
 
 

@@ -4,6 +4,7 @@ import com.yobitrust.HachCovid19Back.Models.PatientParts.ExpoRisque.ExpoRisque;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class Diagnostic {
@@ -16,6 +17,7 @@ public class Diagnostic {
     private ExamRadio_ParaCli examRadio_paraCli;
     private EvaluationFinale evaluationFinale;
     private ExamBio examBio;
+    private Traitement traitement;
 
     public Diagnostic() {
 
@@ -23,9 +25,10 @@ public class Diagnostic {
         this.admissions=new ArrayList<>();
         this.examRadio_paraCli=new ExamRadio_ParaCli();
         this.examBio= new ExamBio();
+        this.traitement= new Traitement();
     }
 
-    public Diagnostic(Date dateDiag, ExpoRisque expoRisque,List<ConfDiag> confDiags,List<Admission> admissions,CaracCliniques caracCliniques,ExamenCli examenCli,ExamRadio_ParaCli examRadio_paraCli,EvaluationFinale evaluationFinale,ExamBio examBio) {
+    public Diagnostic(Date dateDiag, ExpoRisque expoRisque,List<ConfDiag> confDiags,List<Admission> admissions,CaracCliniques caracCliniques,ExamenCli examenCli,ExamRadio_ParaCli examRadio_paraCli,EvaluationFinale evaluationFinale,ExamBio examBio,Traitement traitement) {
         this.dateDiag = dateDiag;
         this.expoRisque = expoRisque;
         this.confDiags=confDiags;
@@ -35,6 +38,7 @@ public class Diagnostic {
         this.examRadio_paraCli=examRadio_paraCli;
         this.evaluationFinale=evaluationFinale;
         this.examBio=examBio;
+        this.traitement=traitement;
     }
 
     public ExamBio getExamBio() {
@@ -108,5 +112,13 @@ public class Diagnostic {
     public void setExamRadio_paraCli(ExamRadio_ParaCli examRadio_paraCli) {
         this.examRadio_paraCli = examRadio_paraCli;
 
+    }
+
+    public Traitement getTraitement() {
+        return traitement;
+    }
+
+    public void setTraitement(Traitement traitement) {
+        this.traitement = traitement;
     }
 }
