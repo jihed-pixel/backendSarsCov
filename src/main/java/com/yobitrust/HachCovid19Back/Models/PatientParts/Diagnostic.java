@@ -1,6 +1,7 @@
 package com.yobitrust.HachCovid19Back.Models.PatientParts;
 
 import com.yobitrust.HachCovid19Back.Models.PatientParts.ExpoRisque.ExpoRisque;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.evaluation.Evolution;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,6 +19,7 @@ public class Diagnostic {
     private EvaluationFinale evaluationFinale;
     private ExamBio examBio;
     private Traitement traitement;
+    private EvoluationQuo evolution;
 
     public Diagnostic() {
 
@@ -26,9 +28,10 @@ public class Diagnostic {
         this.examRadio_paraCli=new ExamRadio_ParaCli();
         this.examBio= new ExamBio();
         this.traitement= new Traitement();
+        this.evolution=new EvoluationQuo();
     }
 
-    public Diagnostic(Date dateDiag, ExpoRisque expoRisque,List<ConfDiag> confDiags,List<Admission> admissions,CaracCliniques caracCliniques,ExamenCli examenCli,ExamRadio_ParaCli examRadio_paraCli,EvaluationFinale evaluationFinale,ExamBio examBio,Traitement traitement) {
+    public Diagnostic(Date dateDiag, ExpoRisque expoRisque,List<ConfDiag> confDiags,List<Admission> admissions,CaracCliniques caracCliniques,ExamenCli examenCli,ExamRadio_ParaCli examRadio_paraCli,EvaluationFinale evaluationFinale,ExamBio examBio,Traitement traitement,EvoluationQuo evolution) {
         this.dateDiag = dateDiag;
         this.expoRisque = expoRisque;
         this.confDiags=confDiags;
@@ -39,6 +42,7 @@ public class Diagnostic {
         this.evaluationFinale=evaluationFinale;
         this.examBio=examBio;
         this.traitement=traitement;
+        this.evolution=evolution;
     }
 
     public ExamBio getExamBio() {
@@ -120,5 +124,13 @@ public class Diagnostic {
 
     public void setTraitement(Traitement traitement) {
         this.traitement = traitement;
+    }
+
+    public EvoluationQuo getEvolution() {
+        return evolution;
+    }
+
+    public void setEvolution(EvoluationQuo evolution) {
+        this.evolution = evolution;
     }
 }

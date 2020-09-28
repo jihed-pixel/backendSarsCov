@@ -14,6 +14,7 @@ import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.Pcr;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.RapideAc;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.RapideAg;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.confDiags.Serologie;
+import com.yobitrust.HachCovid19Back.Models.PatientParts.evaluation.*;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.traitement.Dosage;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.traitement.TraitementPart;
 import com.yobitrust.HachCovid19Back.Models.RequestModels.*;
@@ -521,7 +522,7 @@ public class PatientController {
         return  ResponseEntity.ok(patient.getDiagnostics().get(index));
     }
 
-    @PostMapping (value = "add-examen-bio-image/{cin}" )
+    @PostMapping (value = "/add-examen-bio-image/{cin}" )
     public ResponseEntity addImage(@RequestParam("file")MultipartFile file , @RequestParam("dateDiag")   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  Date dateDiag, @PathVariable Integer cin,@RequestParam("datePr")  @DateTimeFormat(pattern = "yyyy-mm-dd") Date datePr) throws IOException {
 
         //System.out.println(dateDiag);
@@ -548,7 +549,7 @@ public class PatientController {
 
          }
 
-    @PostMapping("add-traitement/{cin}")
+    @PostMapping("/add-traitement/{cin}")
     public ResponseEntity addTraitement(@RequestBody TraitementModel model, @PathVariable Integer cin ){
         Patient patient = patientRepository.findByCin(cin);
         ModelMapper mapper= new ModelMapper();
@@ -598,7 +599,7 @@ public class PatientController {
         return  ResponseEntity.ok(patient.getDiagnostics().get(index).getTraitement().getTraitementPart().get(model.getTrai()).getDosages().get(last)) ;
 
     }
-    @PostMapping("get-traitment/{cin}")
+    @PostMapping("/get-traitment/{cin}")
 
     public ResponseEntity getTraitment(@PathVariable Integer cin, @RequestBody GetTraitmentModel model){
         Patient patient = patientRepository.findByCin(cin);
@@ -616,10 +617,113 @@ public class PatientController {
         }
         else return ResponseEntity.ok("Aucun taitment");
 
+    }
+    @PostMapping ("/add-Evolution/{cin}")
+    public ResponseEntity addEvolution(@PathVariable Integer cin, @RequestBody EvolutionModel model){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        Integer index = findDiagnosticByDate(patient.getDiagnostics(),model.getDateDiag());
+        if(index ==-1){
+            return ResponseEntity.ok("No diagnostoc added on "+model.getDateDiag());
+        }
+        if(model.getCategory().equals("evaluValues")){
+            EvaluValue evaluValue= mapper.map(model,EvaluValue.class);
+            if(patient.getDiagnostics().get(index).getEvolution().getEvaluations().get(model.getType())==null)
+            {
+                EvaluValueList list = new EvaluValueList();
+                list.getEvaluValues().add(evaluValue);
+                patient.getDiagnostics().get(index).getEvolution().getEvaluations().put(model.getType(),list);
+            }
+            else patient.getDiagnostics().get(index).getEvolution().getEvaluations().get(model.getType()).getEvaluValues().add(evaluValue);
+        }
+        if(model.getCategory().equals("USI")){
+            USIValue  usiValue = mapper.map(model,USIValue.class);
+
+            if(patient.getDiagnostics().get(index).getEvolution().getUsiValues().get(model.getType()) ==null){
+                //System.out.println("cc value");
+                UsiValueList list = new UsiValueList();
+                list.getUsiValues().add(usiValue);
+                //System.out.println(list.getUsiValues().size());
+                patient.getDiagnostics().get(index).getEvolution().getUsiValues().put(model.getType(), list);
+            }
+            else patient.getDiagnostics().get(index).getEvolution().getUsiValues().get(model.getType()).getUsiValues().add(usiValue);
+        }
+        if(model.getCategory().equals("AssResp")){
+            AssRespValue value= mapper.map(model,AssRespValue.class);
+
+            if(patient.getDiagnostics().get(index).getEvolution().getAssRespValues().get(model.getType())==null){
+                AssRespList list= new AssRespList();
+                list.getAssRespValues().add(value);
+                patient.getDiagnostics().get(index).getEvolution().getAssRespValues().put(model.getType(),list);
+
+            }
+            else patient.getDiagnostics().get(index).getEvolution().getAssRespValues().get(model.getType()).getAssRespValues().add(value);
+        }
+        if(model.getCategory().equals("Evolution")){
+            Evolution evolution;
+            if(model.getType().equals("IHH")){
+                evolution= mapper.map(model,EvolutionIHH.class);
+                patient.getDiagnostics().get(index).getEvolution().getEvolutions().add(evolution);
+
+            }
+            if(model.getType().equals("Ho")){
+                evolution=mapper.map(model,EvolutionHo.class);
+                patient.getDiagnostics().get(index).getEvolution().getEvolutions().add(evolution);
+            }
+        }
+
+        patientRepository.save(patient);
+        return ResponseEntity.ok(patient.getDiagnostics().get(index).getEvolution());
+        }
 
 
+
+         @PostMapping("/get-evolution/{cin}")
+
+         public ResponseEntity getEvolution(@PathVariable Integer cin ,@RequestBody GetEvolutionModel model){
+             Patient patient = patientRepository.findByCin(cin);
+             //ModelMapper mapper= new ModelMapper();
+             if (patient == null){
+                 return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+             }
+             Integer index = findDiagnosticByDate(patient.getDiagnostics(),model.getDateDiag());
+             if(index ==-1){
+                 return ResponseEntity.ok("No diagnostoc added on "+model.getDateDiag());
+             }
+             // if transfert usi
+             if(model.getCategory().equals("AssResp") ){
+                 if(patient.getDiagnostics().get(index).getEvolution()==null
+                         || patient.getDiagnostics().get(index).getEvolution().getAssRespValues()==null
+                         || patient.getDiagnostics().get(index).getEvolution().getAssRespValues().get(model.getType()) == null
+                         || patient.getDiagnostics().get(index).getEvolution().getAssRespValues().get(model.getType()).getAssRespValues()==null
+                         || patient.getDiagnostics().get(index).getEvolution().getAssRespValues().get(model.getType()).getAssRespValues().size()==0
+
+                 )
+
+                     return ResponseEntity.ok("Aucun Transfert trouvé !");
+                 else return ResponseEntity.ok(patient.getDiagnostics().get(index).getEvolution().getAssRespValues().get(model.getType()).getAssRespValues().get(patient.getDiagnostics().get(index).getEvolution().getAssRespValues().get(model.getType()).getAssRespValues().size()-1));
+             }
+             // if transfert assistance respura
+             if(model.getCategory().equals("USI") ){
+                 if(patient.getDiagnostics().get(index).getEvolution()==null
+                         || patient.getDiagnostics().get(index).getEvolution().getUsiValues()==null
+                         || patient.getDiagnostics().get(index).getEvolution().getUsiValues().get(model.getType()) == null
+                         || patient.getDiagnostics().get(index).getEvolution().getUsiValues().get(model.getType()).getUsiValues()==null
+                         || patient.getDiagnostics().get(index).getEvolution().getUsiValues().get(model.getType()).getUsiValues().size()==0
+
+                 )
+
+                     return ResponseEntity.ok("Aucun Transfert trouvé !");
+                 else return ResponseEntity.ok(patient.getDiagnostics().get(index).getEvolution().getUsiValues().get(model.getType()).getUsiValues().get(patient.getDiagnostics().get(index).getEvolution().getUsiValues().get(model.getType()).getUsiValues().size()-1));
+             }
+             return ResponseEntity.ok("Aucun !");
+
+         }
     }
-    }
+
 
 
 
