@@ -3,12 +3,12 @@ package com.yobitrust.HachCovid19Back.Models.PatientParts.ExamRadioParaCli;
 import java.util.Date;
 
 public class TdmTho {
-    private Date datePr;
+    private Date datepr;
     private String result;
-    private Double aspect;
+    private String aspect;
 
-    public TdmTho(Date datePr, String result, Double aspect) {
-        this.datePr = datePr;
+    public TdmTho(Date datepr, String result, String aspect) {
+        this.datepr = datepr;
         this.result = result;
         this.aspect = aspect;
     }
@@ -16,12 +16,12 @@ public class TdmTho {
     public TdmTho() {
     }
 
-    public Date getDatePr() {
-        return datePr;
+    public Date getDatepr() {
+        return datepr;
     }
 
-    public void setDatePr(Date datePr) {
-        this.datePr = datePr;
+    public void setDatepr(Date datepr) {
+        this.datepr = datepr;
     }
 
     public String getResult() {
@@ -32,11 +32,11 @@ public class TdmTho {
         this.result = result;
     }
 
-    public Double getAspect() {
+    public String getAspect() {
         return aspect;
     }
 
-    public void setAspect(Double aspect) {
+    public void setAspect(String aspect) {
         this.aspect = aspect;
     }
 }

@@ -3,25 +3,25 @@ package com.yobitrust.HachCovid19Back.Models.PatientParts.ExamRadioParaCli;
 import java.util.Date;
 
 public class Thorax {
-    private Date datePr;
+    private Date datepr;
     private String result;
     private Integer nbQua;
 
     public Thorax() {
     }
 
-    public Thorax(Date datePr, String result, Integer nbQua) {
-        this.datePr = datePr;
+    public Thorax(Date datepr, String result, Integer nbQua) {
+        this.datepr = datepr;
         this.result = result;
         this.nbQua = nbQua;
     }
 
-    public Date getDatePr() {
-        return datePr;
+    public Date getDatepr() {
+        return datepr;
     }
 
-    public void setDatePr(Date datePr) {
-        this.datePr = datePr;
+    public void setDatepr(Date datepr) {
+        this.datepr = datepr;
     }
 
     public String getResult() {
