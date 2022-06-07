@@ -31,8 +31,8 @@ public class ExamBioModel {
     private Double sao2;
     private Double nak;
     private Double nak1;
-    private Double nakUr;
-    private Double nakUr1;
+    private Double nakur;
+    private Double nakur1;
     private  Double gb;
     private Double lym;
     private Double pla;
@@ -40,6 +40,60 @@ public class ExamBioModel {
     private Double ht;
 
     public ExamBioModel() {
+    }
+
+    public ExamBioModel(Date datePr, String type, Double biliru, Double biliru1, Double alat, Double asat, Double tp, Double facteurV, Double fibrinogene, Double cpk_mb, Double troponine, Double pro_bnp, Double albumi, Double d_dimère, Double ldh, Double crp, Double procal, Double ferri, Double creat, Double clairCreat, Double uree, Double ph, Double pao2, Double paco2, Double hco3_, Double sao2, Double nak, Double nak1, Double nakur, Double nakur1, Double gb, Double lym, Double pla, Double hb, Double ht) {
+        this.datePr = datePr;
+        this.type = type;
+        this.biliru = biliru;
+        this.biliru1 = biliru1;
+        this.alat = alat;
+        this.asat = asat;
+        this.tp = tp;
+        this.facteurV = facteurV;
+        this.fibrinogene = fibrinogene;
+        this.cpk_mb = cpk_mb;
+        this.troponine = troponine;
+        this.pro_bnp = pro_bnp;
+        this.albumi = albumi;
+        this.d_dimère = d_dimère;
+        this.ldh = ldh;
+        this.crp = crp;
+        this.procal = procal;
+        this.ferri = ferri;
+        this.creat = creat;
+        this.clairCreat = clairCreat;
+        this.uree = uree;
+        this.ph = ph;
+        this.pao2 = pao2;
+        this.paco2 = paco2;
+        this.hco3_ = hco3_;
+        this.sao2 = sao2;
+        this.nak = nak;
+        this.nak1 = nak1;
+        this.nakur = nakur;
+        this.nakur1 = nakur1;
+        this.gb = gb;
+        this.lym = lym;
+        this.pla = pla;
+        this.hb = hb;
+        this.ht = ht;
+    }
+
+    public Double getNakur() {
+        return nakur;
+    }
+
+    public void setNakur(Double nakur) {
+        this.nakur = nakur;
+    }
+
+    public Double getNakur1() {
+        return nakur1;
+    }
+
+    public void setNakur1(Double nakur1) {
+        this.nakur1 = nakur1;
     }
 
     public Date getDatePr() {
@@ -266,21 +320,7 @@ public class ExamBioModel {
         this.nak1 = nak1;
     }
 
-    public Double getNakUr() {
-        return nakUr;
-    }
 
-    public void setNakUr(Double nakUr) {
-        this.nakUr = nakUr;
-    }
-
-    public Double getNakUr1() {
-        return nakUr1;
-    }
-
-    public void setNakUr1(Double nakUr1) {
-        this.nakUr1 = nakUr1;
-    }
 
     public Double getGb() {
         return gb;

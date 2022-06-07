@@ -7,12 +7,10 @@ import java.util.Date;
 public class Pcr extends ConfDiag {
     private String test;
     private Date datePr;
-    private String type;
     private String result;
 
-    public Pcr(Date datePr, String type, String result,String test) {
+    public Pcr(Date datePr, String result,String test) {
         this.datePr = datePr;
-        this.type = type;
         this.result = result;
         this.test = test;
     }
@@ -26,14 +24,6 @@ public class Pcr extends ConfDiag {
 
     public void setDatePr(Date datePr) {
         this.datePr = datePr;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getResult() {

@@ -1,5 +1,4 @@
 package com.yobitrust.HachCovid19Back.Controllers;
-import com.sun.jdi.VoidType;
 import com.yobitrust.HachCovid19Back.Models.Patient;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.*;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.AntecedentsMedicaux.*;
@@ -9,7 +8,6 @@ import com.yobitrust.HachCovid19Back.Models.PatientParts.CaracteristiquesCliniqu
 import com.yobitrust.HachCovid19Back.Models.PatientParts.ExamRadioParaCli.ECG;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.ExamRadioParaCli.TdmTho;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.ExamRadioParaCli.Thorax;
-import com.yobitrust.HachCovid19Back.Models.PatientParts.Exam_Bio.*;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.ExpoRisque.*;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.IONOGRA.NAK1;
 import com.yobitrust.HachCovid19Back.Models.PatientParts.IONOGRA.NAKUR;
@@ -29,13 +27,9 @@ import com.yobitrust.HachCovid19Back.Models.RequestModels.*;
 import com.yobitrust.HachCovid19Back.Repositories.PatientRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
 import java.util.*;
 
 @RestController
@@ -140,7 +134,6 @@ public class PatientController {
         }
         return  -1;
     }
-
     public Integer findNFSByDate(List<LYM> lyms , Date date) {
         for (Integer i =0;i<lyms.size();i++){
             Date date1=lyms.get(i).getDatePr();
@@ -176,6 +169,13 @@ public class PatientController {
     @GetMapping("/search/{cin}/{cinD}")
     public ResponseEntity searchPatient(@PathVariable Integer cin,@PathVariable String cinD){
         Patient patient=patientRepository.findByCinAndCinD(cin,cinD);
+        if(patient==null) return ResponseEntity.ok("No patient having \""+cin+"\"as cin ");
+        return ResponseEntity.ok(patient);
+    }
+    @CrossOrigin(origins ="*" )
+    @GetMapping("/search1/{cin}")
+    public ResponseEntity searchPatient(@PathVariable Integer cin){
+        Patient patient=patientRepository.findByCin(cin);
         if(patient==null) return ResponseEntity.ok("No patient having \""+cin+"\"as cin ");
         return ResponseEntity.ok(patient);
     }
@@ -471,14 +471,14 @@ public class PatientController {
 
     @CrossOrigin(origins ="*" )
     @PostMapping("add-confDiag/{cin}")
-    public ResponseEntity addConfDiag(@PathVariable Integer cin, @RequestBody ConfDiagModel confDiagModel){
+    public ResponseEntity addConfDiag(@PathVariable Integer cin, @RequestBody ConfDiagModel model){
         Patient patient = patientRepository.findByCin(cin);
         ModelMapper mapper= new ModelMapper();
         if (patient == null){
             return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
         }
-        if(confDiagModel.getTest().equals("Pcr")) {
-            Pcr pcr = mapper.map(confDiagModel, Pcr.class);
+        if(model.getType().equals("Pcr")) {
+            Pcr pcr = mapper.map(model, Pcr.class);
             Integer index = findPCRByDate(patient.getConfDiags().getPcrs(), pcr.getDatePr());
             System.out.println("index : " + index);
             if (index == -1) {
@@ -489,8 +489,8 @@ public class PatientController {
                 patient.getConfDiags().getPcrs().add(pcr);
             }
         }
-        if(confDiagModel.getTest().equals("RapideAc")){
-            RapideAc rapideAc=mapper.map(confDiagModel,RapideAc.class);
+        if(model.getType().equals("RapideAc")){
+            RapideAc rapideAc=mapper.map(model,RapideAc.class);
             Integer index = findRapideAcByDate(patient.getConfDiags().getRapideAcs(), rapideAc.getDatePr());
             System.out.println("index : " + index);
             if (index == -1) {
@@ -501,8 +501,8 @@ public class PatientController {
                 patient.getConfDiags().getRapideAcs().add(rapideAc);
             }
         }
-        if(confDiagModel.getTest().equals("RapideAg")){
-            RapideAg rapideAg=mapper.map(confDiagModel,RapideAg.class);
+        if(model.getType().equals("RapideAg")){
+            RapideAg rapideAg=mapper.map(model,RapideAg.class);
             Integer index = findRapideAgByDate(patient.getConfDiags().getRapideAgs(), rapideAg.getDatePr());
             System.out.println("index : " + index);
             if (index == -1) {
@@ -513,8 +513,8 @@ public class PatientController {
                 patient.getConfDiags().getRapideAgs().add(rapideAg);
             }
         }
-        if(confDiagModel.getTest().equals("Serologie")){
-            Serologie serologie =mapper.map(confDiagModel,Serologie.class);
+        if(model.getType().equals("Serologie")){
+            Serologie serologie =mapper.map(model,Serologie.class);
             Integer index = findSerologieByDate(patient.getConfDiags().getSerologies(), serologie.getDatePr());
             System.out.println("index : " + index);
             if (index == -1) {
@@ -529,6 +529,45 @@ public class PatientController {
         return  ResponseEntity.ok(patient);
     }
     @CrossOrigin(origins ="*" )
+    @PostMapping("del-one-confDiag/{cin}")
+    public ResponseEntity delOneConfDiag(@PathVariable Integer cin, @RequestBody ConfDiagModel model){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        if(model.getType().equals("Pcr")) {
+            Pcr pcr = mapper.map(model, Pcr.class);
+            Integer index = findPCRByDate(patient.getConfDiags().getPcrs(), pcr.getDatePr());
+            if (index != -1) {
+                patient.getConfDiags().getPcrs().remove(patient.getConfDiags().getPcrs().get(index));
+            }
+        }
+        if(model.getType().equals("RapideAc")){
+            RapideAc rapideAc=mapper.map(model,RapideAc.class);
+            Integer index = findRapideAcByDate(patient.getConfDiags().getRapideAcs(), rapideAc.getDatePr());
+            if (index != -1) {
+                patient.getConfDiags().getRapideAcs().remove(patient.getConfDiags().getRapideAcs().get(index));
+            }
+        }
+        if(model.getType().equals("RapideAg")){
+            RapideAg rapideAg=mapper.map(model,RapideAg.class);
+            Integer index = findRapideAgByDate(patient.getConfDiags().getRapideAgs(), rapideAg.getDatePr());
+            if (index != -1) {
+                patient.getConfDiags().getRapideAgs().remove(patient.getConfDiags().getRapideAgs().get(index));
+            }
+        }
+        if(model.getType().equals("Serologie")){
+            Serologie serologie =mapper.map(model,Serologie.class);
+            Integer index = findSerologieByDate(patient.getConfDiags().getSerologies(), serologie.getDatePr());
+            if (index != -1) {
+                patient.getConfDiags().getSerologies().remove(patient.getConfDiags().getSerologies().get(index));
+            }
+        }
+        patientRepository.save(patient);
+        return  ResponseEntity.ok(patient);
+    }
+    @CrossOrigin(origins ="*" )
     @PostMapping("/add-admission/{cin}")
     public ResponseEntity addAdmission(@PathVariable Integer cin , @RequestBody AdmissionModel model){
         Patient patient = patientRepository.findByCin(cin);
@@ -536,7 +575,6 @@ public class PatientController {
         if (patient == null){
             return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
         }
-
         if (model.getType().equals("hop")){
             AdmHop admHop= mapper.map(model,AdmHop.class);
             patient.getAdmissions().add(admHop);
@@ -556,7 +594,6 @@ public class PatientController {
         if (patient == null){
             return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
         }
-
         //System.out.println(patient.getDiagnostics().get(index).getCaracCliniques());
 
         if(patient.getCaracCliniques()==null){
@@ -812,6 +849,41 @@ public class PatientController {
         patientRepository.save(patient);
         return ResponseEntity.ok(patient);
     }
+    @CrossOrigin(origins ="*" )
+    @PostMapping("/del-one-examen-radio-paracli/{cin}")
+    public ResponseEntity delOneExamenRadioParaCli(@PathVariable Integer cin ,@RequestBody ExamRadioParaCliModel model){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        if(model.getType().equals("Thorax")){
+            Thorax thorax=mapper.map(model,Thorax.class);
+            Integer index = findThoraxByDate(patient.getExamRadio_paraCli().getThoraxes(), thorax.getDatepr());
+            if (index != -1) {
+                patient.getExamRadio_paraCli().getThoraxes().remove(patient.getExamRadio_paraCli().getThoraxes().get(index));
+            }
+
+        }
+        if(model.getType().equals("TdmTho")){
+            TdmTho tdmTho=mapper.map(model,TdmTho.class);
+            Integer index = findTdmThoByDate(patient.getExamRadio_paraCli().getTdmThos(), tdmTho.getDatepr());
+            if (index != -1) {
+                patient.getExamRadio_paraCli().getTdmThos().remove(patient.getExamRadio_paraCli().getTdmThos().get(index));
+            }
+
+        }
+        if(model.getType().equals("ECG")){
+            ECG ecg=mapper.map(model,ECG.class);
+            Integer index = findECGByDate(patient.getExamRadio_paraCli().getEcgs(), ecg.getDatepr());
+            if (index != -1) {
+                patient.getExamRadio_paraCli().getEcgs().remove(patient.getExamRadio_paraCli().getEcgs().get(index));
+            }
+
+        }
+        patientRepository.save(patient);
+        return ResponseEntity.ok(patient);
+    }
 
     @CrossOrigin(origins ="*" )
     @PostMapping("add-evaluation-finale/{cin}")
@@ -869,22 +941,22 @@ public class PatientController {
             NAK1 nak1 =mapper.map(model, NAK1.class);
             NAKUR nakur =mapper.map(model, NAKUR.class);
             NAKUR1 nakur1 =mapper.map(model, NAKUR1.class);
-            Integer index = findIonograByDate(patient.getExamBio().getIonogras().getNaks(), nak.getDatePr());
+            Integer index = findIonograByDate(patient.getExamBio().getIonogra().getNaks(), nak.getDatePr());
             if (index == -1) {
-                patient.getExamBio().getIonogras().getNaks().add(nak);
-                patient.getExamBio().getIonogras().getNak1s().add(nak1);
-                patient.getExamBio().getIonogras().getNakUrs().add(nakur);
-                patient.getExamBio().getIonogras().getNakUr1s().add(nakur1);
+                patient.getExamBio().getIonogra().getNaks().add(nak);
+                patient.getExamBio().getIonogra().getNak1s().add(nak1);
+                patient.getExamBio().getIonogra().getNakurs().add(nakur);
+                patient.getExamBio().getIonogra().getNakur1s().add(nakur1);
             }
             else{
-                patient.getExamBio().getIonogras().getNaks().remove(patient.getExamBio().getIonogras().getNaks().get(index));
-                patient.getExamBio().getIonogras().getNaks().add(nak);
-                patient.getExamBio().getIonogras().getNak1s().remove(patient.getExamBio().getIonogras().getNak1s().get(index));
-                patient.getExamBio().getIonogras().getNak1s().add(nak1);
-                patient.getExamBio().getIonogras().getNakUrs().remove(patient.getExamBio().getIonogras().getNakUrs().get(index));
-                patient.getExamBio().getIonogras().getNakUrs().add(nakur);
-                patient.getExamBio().getIonogras().getNakUr1s().remove(patient.getExamBio().getIonogras().getNakUr1s().get(index));
-                patient.getExamBio().getIonogras().getNakUr1s().add(nakur1);
+                patient.getExamBio().getIonogra().getNaks().remove(patient.getExamBio().getIonogra().getNaks().get(index));
+                patient.getExamBio().getIonogra().getNaks().add(nak);
+                patient.getExamBio().getIonogra().getNak1s().remove(patient.getExamBio().getIonogra().getNak1s().get(index));
+                patient.getExamBio().getIonogra().getNak1s().add(nak1);
+                patient.getExamBio().getIonogra().getNakurs().remove(patient.getExamBio().getIonogra().getNakurs().get(index));
+                patient.getExamBio().getIonogra().getNakurs().add(nakur);
+                patient.getExamBio().getIonogra().getNakur1s().remove(patient.getExamBio().getIonogra().getNakur1s().get(index));
+                patient.getExamBio().getIonogra().getNakur1s().add(nakur1);
             }
 
         }
@@ -894,45 +966,192 @@ public class PatientController {
             PACO2 paco2 =mapper.map(model, PACO2.class);
             HCO3 hco3 =mapper.map(model, HCO3.class);
             SAO2 sao2 =mapper.map(model, SAO2.class);
-            Integer index = findGDSAByDate(patient.getExamBio().getGdsas().getPhs(), ph.getDatePr());
+            Integer index = findGDSAByDate(patient.getExamBio().getGdsa().getPhs(), ph.getDatePr());
             if (index == -1) {
-                patient.getExamBio().getGdsas().getPhs().add(ph);
-                patient.getExamBio().getGdsas().getPao2s().add(pao2);
-                patient.getExamBio().getGdsas().getPaco2s().add(paco2);
-                patient.getExamBio().getGdsas().getHco3s().add(hco3);
-                patient.getExamBio().getGdsas().getSao2s().add(sao2);
+                patient.getExamBio().getGdsa().getPhs().add(ph);
+                patient.getExamBio().getGdsa().getPao2s().add(pao2);
+                patient.getExamBio().getGdsa().getPaco2s().add(paco2);
+                patient.getExamBio().getGdsa().getHco3s().add(hco3);
             }
             else{
-                patient.getExamBio().getGdsas().getPhs().remove(patient.getExamBio().getGdsas().getPhs().get(index));
-                patient.getExamBio().getGdsas().getPhs().add(ph);
-                patient.getExamBio().getGdsas().getPao2s().remove(patient.getExamBio().getGdsas().getPao2s().get(index));
-                patient.getExamBio().getGdsas().getPao2s().add(pao2);
-                patient.getExamBio().getGdsas().getPaco2s().remove(patient.getExamBio().getGdsas().getPaco2s().get(index));
-                patient.getExamBio().getGdsas().getPaco2s().add(paco2);
-                patient.getExamBio().getGdsas().getHco3s().remove(patient.getExamBio().getGdsas().getHco3s().get(index));
-                patient.getExamBio().getGdsas().getHco3s().add(hco3);
-                patient.getExamBio().getGdsas().getSao2s().remove(patient.getExamBio().getGdsas().getSao2s().get(index));
-                patient.getExamBio().getGdsas().getSao2s().add(sao2);
+                patient.getExamBio().getGdsa().getPhs().remove(patient.getExamBio().getGdsa().getPhs().get(index));
+                patient.getExamBio().getGdsa().getPhs().add(ph);
+                patient.getExamBio().getGdsa().getPao2s().remove(patient.getExamBio().getGdsa().getPao2s().get(index));
+                patient.getExamBio().getGdsa().getPao2s().add(pao2);
+                patient.getExamBio().getGdsa().getPaco2s().remove(patient.getExamBio().getGdsa().getPaco2s().get(index));
+                patient.getExamBio().getGdsa().getPaco2s().add(paco2);
+                patient.getExamBio().getGdsa().getHco3s().remove(patient.getExamBio().getGdsa().getHco3s().get(index));
+                patient.getExamBio().getGdsa().getHco3s().add(hco3);
+                patient.getExamBio().getGdsa().getSao2s().remove(patient.getExamBio().getGdsa().getSao2s().get(index));
             }
+            patient.getExamBio().getGdsa().getSao2s().add(sao2);
 
         }
         if(model.getType().equals("BilanRenal")){
             CREAT creat =mapper.map(model, CREAT.class);
             CLAIRCREAT claircreat =mapper.map(model, CLAIRCREAT.class);
             UREE uree =mapper.map(model, UREE.class);
-            Integer index = findBilanRenalByDate(patient.getExamBio().getBilanRenal().getCreats(), creat.getDatePr());
+            Integer index = findBilanRenalByDate(patient.getExamBio().getBilanrenal().getCreats(), creat.getDatePr());
             if (index == -1) {
-                patient.getExamBio().getBilanRenal().getCreats().add(creat);
-                patient.getExamBio().getBilanRenal().getClairCreats().add(claircreat);
-                patient.getExamBio().getBilanRenal().getUrees().add(uree);
+                patient.getExamBio().getBilanrenal().getCreats().add(creat);
+                patient.getExamBio().getBilanrenal().getClairCreats().add(claircreat);
             }
             else{
-                patient.getExamBio().getBilanRenal().getCreats().remove(patient.getExamBio().getBilanRenal().getCreats().get(index));
-                patient.getExamBio().getBilanRenal().getCreats().add(creat);
-                patient.getExamBio().getBilanRenal().getClairCreats().remove(patient.getExamBio().getBilanRenal().getClairCreats().get(index));
-                patient.getExamBio().getBilanRenal().getClairCreats().add(claircreat);
-                patient.getExamBio().getBilanRenal().getUrees().remove(patient.getExamBio().getBilanRenal().getUrees().get(index));
-                patient.getExamBio().getBilanRenal().getUrees().add(uree);
+                patient.getExamBio().getBilanrenal().getCreats().remove(patient.getExamBio().getBilanrenal().getCreats().get(index));
+                patient.getExamBio().getBilanrenal().getCreats().add(creat);
+                patient.getExamBio().getBilanrenal().getClairCreats().remove(patient.getExamBio().getBilanrenal().getClairCreats().get(index));
+                patient.getExamBio().getBilanrenal().getClairCreats().add(claircreat);
+                patient.getExamBio().getBilanrenal().getUrees().remove(patient.getExamBio().getBilanrenal().getUrees().get(index));
+            }
+            patient.getExamBio().getBilanrenal().getUrees().add(uree);
+
+        }
+        if(model.getType().equals("BilanHepa")){
+            BILIRU biliru =mapper.map(model, BILIRU.class);
+            BILIRU1 biliru1 =mapper.map(model, BILIRU1.class);
+            ALAT alat =mapper.map(model, ALAT.class);
+            ASAT asat =mapper.map(model, ASAT.class);
+            TP tp =mapper.map(model, TP.class);
+            FACTEURV facteurv =mapper.map(model, FACTEURV.class);
+            FIBRINOGENE fibrinogene =mapper.map(model, FIBRINOGENE.class);
+            CPK_MB cpk_mb =mapper.map(model, CPK_MB.class);
+            TROPONINE troponine =mapper.map(model, TROPONINE.class);
+            PRO_BNP pro_bnp =mapper.map(model, PRO_BNP.class);
+            ALBUMI albumi =mapper.map(model, ALBUMI.class);
+            D_DIMERE d_dimere =mapper.map(model, D_DIMERE.class);
+            LDH ldh =mapper.map(model, LDH.class);
+            CRP crp =mapper.map(model, CRP.class);
+            PROCAL procal =mapper.map(model, PROCAL.class);
+            FERRI ferri =mapper.map(model, FERRI.class);
+            Integer index = findBilanHepaByDate(patient.getExamBio().getBilanhepa().getBilirus(), biliru.getDatePr());
+            if (index == -1) {
+                patient.getExamBio().getBilanhepa().getBilirus().add(biliru);
+                patient.getExamBio().getBilanhepa().getBiliru1s().add(biliru1);
+                patient.getExamBio().getBilanhepa().getAlats().add(alat);
+                patient.getExamBio().getBilanhepa().getAsats().add(asat);
+                patient.getExamBio().getBilanhepa().getTps().add(tp);
+                patient.getExamBio().getBilanhepa().getFacteurVs().add(facteurv);
+                patient.getExamBio().getBilanhepa().getFibrinogenes().add(fibrinogene);
+                patient.getExamBio().getBilanhepa().getCpk_mbs().add(cpk_mb);
+                patient.getExamBio().getBilanhepa().getTroponines().add(troponine);
+                patient.getExamBio().getBilanhepa().getPro_bnps().add(pro_bnp);
+                patient.getExamBio().getBilanhepa().getAlbumis().add(albumi);
+                patient.getExamBio().getBilanhepa().getD_dimères().add(d_dimere);
+                patient.getExamBio().getBilanhepa().getLdhs().add(ldh);
+                patient.getExamBio().getBilanhepa().getCrps().add(crp);
+                patient.getExamBio().getBilanhepa().getProcals().add(procal);
+            }
+            else{
+                patient.getExamBio().getBilanhepa().getBilirus().remove(patient.getExamBio().getBilanhepa().getBilirus().get(index));
+                patient.getExamBio().getBilanhepa().getBilirus().add(biliru);
+                patient.getExamBio().getBilanhepa().getBiliru1s().remove(patient.getExamBio().getBilanhepa().getBiliru1s().get(index));
+                patient.getExamBio().getBilanhepa().getBiliru1s().add(biliru1);
+                patient.getExamBio().getBilanhepa().getAlats().remove(patient.getExamBio().getBilanhepa().getAlats().get(index));
+                patient.getExamBio().getBilanhepa().getAlats().add(alat);
+                patient.getExamBio().getBilanhepa().getAsats().remove(patient.getExamBio().getBilanhepa().getAsats().get(index));
+                patient.getExamBio().getBilanhepa().getAsats().add(asat);
+                patient.getExamBio().getBilanhepa().getTps().remove(patient.getExamBio().getBilanhepa().getTps().get(index));
+                patient.getExamBio().getBilanhepa().getTps().add(tp);
+                patient.getExamBio().getBilanhepa().getFacteurVs().remove(patient.getExamBio().getBilanhepa().getFacteurVs().get(index));
+                patient.getExamBio().getBilanhepa().getFacteurVs().add(facteurv);
+                patient.getExamBio().getBilanhepa().getFibrinogenes().remove(patient.getExamBio().getBilanhepa().getFibrinogenes().get(index));
+                patient.getExamBio().getBilanhepa().getFibrinogenes().add(fibrinogene);
+                patient.getExamBio().getBilanhepa().getCpk_mbs().remove(patient.getExamBio().getBilanhepa().getCpk_mbs().get(index));
+                patient.getExamBio().getBilanhepa().getCpk_mbs().add(cpk_mb);
+                patient.getExamBio().getBilanhepa().getTroponines().remove(patient.getExamBio().getBilanhepa().getTroponines().get(index));
+                patient.getExamBio().getBilanhepa().getTroponines().add(troponine);
+                patient.getExamBio().getBilanhepa().getPro_bnps().remove(patient.getExamBio().getBilanhepa().getPro_bnps().get(index));
+                patient.getExamBio().getBilanhepa().getPro_bnps().add(pro_bnp);
+                patient.getExamBio().getBilanhepa().getAlbumis().remove(patient.getExamBio().getBilanhepa().getAlbumis().get(index));
+                patient.getExamBio().getBilanhepa().getAlbumis().add(albumi);
+                patient.getExamBio().getBilanhepa().getD_dimères().remove(patient.getExamBio().getBilanhepa().getD_dimères().get(index));
+                patient.getExamBio().getBilanhepa().getD_dimères().add(d_dimere);
+                patient.getExamBio().getBilanhepa().getLdhs().remove(patient.getExamBio().getBilanhepa().getLdhs().get(index));
+                patient.getExamBio().getBilanhepa().getLdhs().add(ldh);
+                patient.getExamBio().getBilanhepa().getCrps().remove(patient.getExamBio().getBilanhepa().getCrps().get(index));
+                patient.getExamBio().getBilanhepa().getCrps().add(crp);
+                patient.getExamBio().getBilanhepa().getProcals().remove(patient.getExamBio().getBilanhepa().getProcals().get(index));
+                patient.getExamBio().getBilanhepa().getProcals().add(procal);
+                patient.getExamBio().getBilanhepa().getFerris().remove(patient.getExamBio().getBilanhepa().getFerris().get(index));
+            }
+            patient.getExamBio().getBilanhepa().getFerris().add(ferri);
+
+        }
+        if(model.getType().equals("AutreBilan")){
+            PATHS paths =mapper.map(model, PATHS.class);
+            Integer index = findAutreBilanByDate(patient.getExamBio().getAutrebilan().getPathss(), paths.getDatePr());
+            if (index != -1) {
+                patient.getExamBio().getAutrebilan().getPathss().remove(patient.getExamBio().getAutrebilan().getPathss().get(index));
+            }
+            patient.getExamBio().getAutrebilan().getPathss().add(paths);
+
+        }
+        patientRepository.save(patient);
+        return  ResponseEntity.ok(patient);
+    }
+    @CrossOrigin(origins ="*" )
+    @PostMapping("/del-one-examen-bio/{cin}")
+    public ResponseEntity delOneExamBio(@PathVariable Integer cin , @RequestBody ExamBioModel model  ){
+        Patient patient = patientRepository.findByCin(cin);
+        ModelMapper mapper= new ModelMapper();
+        if (patient == null){
+            return  ResponseEntity.ok("No patient hacing"+cin+" as cin");
+        }
+        if(model.getType().equals("NFS")){
+
+
+            LYM lym =mapper.map(model, LYM.class);
+            GB gb =mapper.map(model, GB.class);
+            HB hb =mapper.map(model, HB.class);
+            HT ht =mapper.map(model, HT.class);
+            PLA pla =mapper.map(model, PLA.class);
+            Integer index = findNFSByDate(patient.getExamBio().getNfs().getLyms(), lym.getDatePr());
+            if (index != -1) {
+                patient.getExamBio().getNfs().getLyms().remove(patient.getExamBio().getNfs().getLyms().get(index));
+                patient.getExamBio().getNfs().getGbs().remove(patient.getExamBio().getNfs().getGbs().get(index));
+                patient.getExamBio().getNfs().getHbs().remove(patient.getExamBio().getNfs().getHbs().get(index));
+                patient.getExamBio().getNfs().getHts().remove(patient.getExamBio().getNfs().getHts().get(index));
+                patient.getExamBio().getNfs().getPlas().remove(patient.getExamBio().getNfs().getPlas().get(index));
+            }
+
+        }
+        if(model.getType().equals("Ionogra")){
+            NAk nak =mapper.map(model, NAk.class);
+            NAK1 nak1 =mapper.map(model, NAK1.class);
+            NAKUR nakur =mapper.map(model, NAKUR.class);
+            NAKUR1 nakur1 =mapper.map(model, NAKUR1.class);
+            Integer index = findIonograByDate(patient.getExamBio().getIonogra().getNaks(), nak.getDatePr());
+            if (index != -1) {
+                patient.getExamBio().getIonogra().getNaks().remove(patient.getExamBio().getIonogra().getNaks().get(index));
+                patient.getExamBio().getIonogra().getNak1s().remove(patient.getExamBio().getIonogra().getNak1s().get(index));
+                patient.getExamBio().getIonogra().getNakurs().remove(patient.getExamBio().getIonogra().getNakurs().get(index));
+                patient.getExamBio().getIonogra().getNakur1s().remove(patient.getExamBio().getIonogra().getNakur1s().get(index));
+            }
+        }
+        if(model.getType().equals("GDSA")){
+            PH ph =mapper.map(model, PH.class);
+            PAO2 pao2 =mapper.map(model, PAO2.class);
+            PACO2 paco2 =mapper.map(model, PACO2.class);
+            HCO3 hco3 =mapper.map(model, HCO3.class);
+            SAO2 sao2 =mapper.map(model, SAO2.class);
+            Integer index = findGDSAByDate(patient.getExamBio().getGdsa().getPhs(), ph.getDatePr());
+            if (index != -1) {
+                patient.getExamBio().getGdsa().getPhs().remove(patient.getExamBio().getGdsa().getPhs().get(index));
+                patient.getExamBio().getGdsa().getPao2s().remove(patient.getExamBio().getGdsa().getPao2s().get(index));
+                patient.getExamBio().getGdsa().getPaco2s().remove(patient.getExamBio().getGdsa().getPaco2s().get(index));
+                patient.getExamBio().getGdsa().getHco3s().remove(patient.getExamBio().getGdsa().getHco3s().get(index));
+                patient.getExamBio().getGdsa().getSao2s().remove(patient.getExamBio().getGdsa().getSao2s().get(index));
+            }
+        }
+        if(model.getType().equals("BilanRenal")){
+            CREAT creat =mapper.map(model, CREAT.class);
+            CLAIRCREAT claircreat =mapper.map(model, CLAIRCREAT.class);
+            UREE uree =mapper.map(model, UREE.class);
+            Integer index = findBilanRenalByDate(patient.getExamBio().getBilanrenal().getCreats(), creat.getDatePr());
+            if (index != -1) {
+                patient.getExamBio().getBilanrenal().getCreats().remove(patient.getExamBio().getBilanrenal().getCreats().get(index));
+                patient.getExamBio().getBilanrenal().getClairCreats().remove(patient.getExamBio().getBilanrenal().getClairCreats().get(index));
+                patient.getExamBio().getBilanrenal().getUrees().remove(patient.getExamBio().getBilanrenal().getUrees().get(index));
             }
 
         }
@@ -953,70 +1172,33 @@ public class PatientController {
             CRP crp =mapper.map(model, CRP.class);
             PROCAL procal =mapper.map(model, PROCAL.class);
             FERRI ferri =mapper.map(model, FERRI.class);
-            Integer index = findBilanHepaByDate(patient.getExamBio().getBilanHepa().getBilirus(), biliru.getDatePr());
-            if (index == -1) {
-                patient.getExamBio().getBilanHepa().getBilirus().add(biliru);
-                patient.getExamBio().getBilanHepa().getBiliru1s().add(biliru1);
-                patient.getExamBio().getBilanHepa().getAlats().add(alat);
-                patient.getExamBio().getBilanHepa().getAsats().add(asat);
-                patient.getExamBio().getBilanHepa().getTps().add(tp);
-                patient.getExamBio().getBilanHepa().getFacteurVs().add(facteurv);
-                patient.getExamBio().getBilanHepa().getFibrinogenes().add(fibrinogene);
-                patient.getExamBio().getBilanHepa().getCpk_mbs().add(cpk_mb);
-                patient.getExamBio().getBilanHepa().getTroponines().add(troponine);
-                patient.getExamBio().getBilanHepa().getPro_bnps().add(pro_bnp);
-                patient.getExamBio().getBilanHepa().getAlbumis().add(albumi);
-                patient.getExamBio().getBilanHepa().getD_dimères().add(d_dimere);
-                patient.getExamBio().getBilanHepa().getLdhs().add(ldh);
-                patient.getExamBio().getBilanHepa().getCrps().add(crp);
-                patient.getExamBio().getBilanHepa().getProcals().add(procal);
-                patient.getExamBio().getBilanHepa().getFerris().add(ferri);
-            }
-            else{
-                patient.getExamBio().getBilanHepa().getBilirus().remove(patient.getExamBio().getBilanHepa().getBilirus().get(index));
-                patient.getExamBio().getBilanHepa().getBilirus().add(biliru);
-                patient.getExamBio().getBilanHepa().getBiliru1s().remove(patient.getExamBio().getBilanHepa().getBiliru1s().get(index));
-                patient.getExamBio().getBilanHepa().getBiliru1s().add(biliru1);
-                patient.getExamBio().getBilanHepa().getAlats().remove(patient.getExamBio().getBilanHepa().getAlats().get(index));
-                patient.getExamBio().getBilanHepa().getAlats().add(alat);
-                patient.getExamBio().getBilanHepa().getAsats().remove(patient.getExamBio().getBilanHepa().getAsats().get(index));
-                patient.getExamBio().getBilanHepa().getAsats().add(asat);
-                patient.getExamBio().getBilanHepa().getTps().remove(patient.getExamBio().getBilanHepa().getTps().get(index));
-                patient.getExamBio().getBilanHepa().getTps().add(tp);
-                patient.getExamBio().getBilanHepa().getFacteurVs().remove(patient.getExamBio().getBilanHepa().getFacteurVs().get(index));
-                patient.getExamBio().getBilanHepa().getFacteurVs().add(facteurv);
-                patient.getExamBio().getBilanHepa().getFibrinogenes().remove(patient.getExamBio().getBilanHepa().getFibrinogenes().get(index));
-                patient.getExamBio().getBilanHepa().getFibrinogenes().add(fibrinogene);
-                patient.getExamBio().getBilanHepa().getCpk_mbs().remove(patient.getExamBio().getBilanHepa().getCpk_mbs().get(index));
-                patient.getExamBio().getBilanHepa().getCpk_mbs().add(cpk_mb);
-                patient.getExamBio().getBilanHepa().getTroponines().remove(patient.getExamBio().getBilanHepa().getTroponines().get(index));
-                patient.getExamBio().getBilanHepa().getTroponines().add(troponine);
-                patient.getExamBio().getBilanHepa().getPro_bnps().remove(patient.getExamBio().getBilanHepa().getPro_bnps().get(index));
-                patient.getExamBio().getBilanHepa().getPro_bnps().add(pro_bnp);
-                patient.getExamBio().getBilanHepa().getAlbumis().remove(patient.getExamBio().getBilanHepa().getAlbumis().get(index));
-                patient.getExamBio().getBilanHepa().getAlbumis().add(albumi);
-                patient.getExamBio().getBilanHepa().getD_dimères().remove(patient.getExamBio().getBilanHepa().getD_dimères().get(index));
-                patient.getExamBio().getBilanHepa().getD_dimères().add(d_dimere);
-                patient.getExamBio().getBilanHepa().getLdhs().remove(patient.getExamBio().getBilanHepa().getLdhs().get(index));
-                patient.getExamBio().getBilanHepa().getLdhs().add(ldh);
-                patient.getExamBio().getBilanHepa().getCrps().remove(patient.getExamBio().getBilanHepa().getCrps().get(index));
-                patient.getExamBio().getBilanHepa().getCrps().add(crp);
-                patient.getExamBio().getBilanHepa().getProcals().remove(patient.getExamBio().getBilanHepa().getProcals().get(index));
-                patient.getExamBio().getBilanHepa().getProcals().add(procal);
-                patient.getExamBio().getBilanHepa().getFerris().remove(patient.getExamBio().getBilanHepa().getFerris().get(index));
-                patient.getExamBio().getBilanHepa().getFerris().add(ferri);
+            Integer index = findBilanHepaByDate(patient.getExamBio().getBilanhepa().getBilirus(), biliru.getDatePr());
+            if (index != -1) {
+
+                patient.getExamBio().getBilanhepa().getBilirus().remove(patient.getExamBio().getBilanhepa().getBilirus().get(index));
+                patient.getExamBio().getBilanhepa().getBiliru1s().remove(patient.getExamBio().getBilanhepa().getBiliru1s().get(index));
+                patient.getExamBio().getBilanhepa().getAlats().remove(patient.getExamBio().getBilanhepa().getAlats().get(index));
+                patient.getExamBio().getBilanhepa().getAsats().remove(patient.getExamBio().getBilanhepa().getAsats().get(index));
+                patient.getExamBio().getBilanhepa().getTps().remove(patient.getExamBio().getBilanhepa().getTps().get(index));
+                patient.getExamBio().getBilanhepa().getFacteurVs().remove(patient.getExamBio().getBilanhepa().getFacteurVs().get(index));
+                patient.getExamBio().getBilanhepa().getFibrinogenes().remove(patient.getExamBio().getBilanhepa().getFibrinogenes().get(index));
+                patient.getExamBio().getBilanhepa().getCpk_mbs().remove(patient.getExamBio().getBilanhepa().getCpk_mbs().get(index));
+                patient.getExamBio().getBilanhepa().getTroponines().remove(patient.getExamBio().getBilanhepa().getTroponines().get(index));
+                patient.getExamBio().getBilanhepa().getPro_bnps().remove(patient.getExamBio().getBilanhepa().getPro_bnps().get(index));
+                patient.getExamBio().getBilanhepa().getAlbumis().remove(patient.getExamBio().getBilanhepa().getAlbumis().get(index));
+                patient.getExamBio().getBilanhepa().getD_dimères().remove(patient.getExamBio().getBilanhepa().getD_dimères().get(index));
+                patient.getExamBio().getBilanhepa().getLdhs().remove(patient.getExamBio().getBilanhepa().getLdhs().get(index));
+                patient.getExamBio().getBilanhepa().getCrps().remove(patient.getExamBio().getBilanhepa().getCrps().get(index));
+                patient.getExamBio().getBilanhepa().getProcals().remove(patient.getExamBio().getBilanhepa().getProcals().get(index));
+                patient.getExamBio().getBilanhepa().getFerris().remove(patient.getExamBio().getBilanhepa().getFerris().get(index));
             }
 
         }
         if(model.getType().equals("AutreBilan")){
             PATHS paths =mapper.map(model, PATHS.class);
-            Integer index = findAutreBilanByDate(patient.getExamBio().getAutreBilans().getPathss(), paths.getDatePr());
-            if (index == -1) {
-                patient.getExamBio().getAutreBilans().getPathss().add(paths);
-            }
-            else{
-                patient.getExamBio().getAutreBilans().getPathss().remove(patient.getExamBio().getAutreBilans().getPathss().get(index));
-                patient.getExamBio().getAutreBilans().getPathss().add(paths);
+            Integer index = findAutreBilanByDate(patient.getExamBio().getAutrebilan().getPathss(), paths.getDatePr());
+            if (index != -1) {
+                patient.getExamBio().getAutrebilan().getPathss().remove(patient.getExamBio().getAutrebilan().getPathss().get(index));
             }
 
         }

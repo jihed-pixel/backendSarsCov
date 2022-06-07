@@ -10,20 +10,20 @@ import java.util.List;
 public class Ionogra {
     private List<NAk> naks;
     private List<NAK1> nak1s;
-    private List<NAKUR> nakUrs;
-    private List<NAKUR1> nakUr1s;
+    private List<NAKUR> nakurs;
+    private List<NAKUR1> nakur1s;
     public Ionogra() {
         this.naks=new ArrayList<>();
         this.nak1s=new ArrayList<>();
-        this.nakUrs=new ArrayList<>();
-        this.nakUr1s=new ArrayList<>();
+        this.nakurs=new ArrayList<>();
+        this.nakur1s=new ArrayList<>();
     }
 
-    public Ionogra(List<NAk> naks, List<NAK1> nak1s, List<NAKUR> nakUrs, List<NAKUR1> nakUr1s) {
+    public Ionogra(List<NAk> naks, List<NAK1> nak1s, List<NAKUR> nakurs, List<NAKUR1> nakur1s) {
         this.naks = naks;
         this.nak1s = nak1s;
-        this.nakUrs = nakUrs;
-        this.nakUr1s = nakUr1s;
+        this.nakurs = nakurs;
+        this.nakur1s = nakur1s;
     }
 
     public List<NAk> getNaks() {
@@ -42,19 +42,19 @@ public class Ionogra {
         this.nak1s = nak1s;
     }
 
-    public List<NAKUR> getNakUrs() {
-        return nakUrs;
+    public List<NAKUR> getNakurs() {
+        return nakurs;
     }
 
-    public void setNakUrs(List<NAKUR> nakUrs) {
-        this.nakUrs = nakUrs;
+    public void setNakurs(List<NAKUR> nakurs) {
+        this.nakurs = nakurs;
     }
 
-    public List<NAKUR1> getNakUr1s() {
-        return nakUr1s;
+    public List<NAKUR1> getNakur1s() {
+        return nakur1s;
     }
 
-    public void setNakUr1s(List<NAKUR1> nakUr1s) {
-        this.nakUr1s = nakUr1s;
+    public void setNakur1s(List<NAKUR1> nakur1s) {
+        this.nakur1s = nakur1s;
     }
 }

@@ -4,27 +4,27 @@ import com.yobitrust.HachCovid19Back.Models.PatientParts.Exam_Bio.*;
 
 public class ExamBio {
     private Nfs nfs;
-    private BilanRenal bilanRenal;
-    private BilanHepa bilanHepa;
-    private GDSA gdsas;
-    private Ionogra ionogras;
-    private AutreBilan autreBilans;
+    private BilanRenal bilanrenal;
+    private BilanHepa bilanhepa;
+    private GDSA gdsa;
+    private Ionogra ionogra;
+    private AutreBilan autrebilan;
     public ExamBio() {
         // this.generalInformation=new GeneralInformation();
         this.nfs= new Nfs();
-        this.bilanRenal=new BilanRenal();
-        this.bilanHepa=new BilanHepa();
-        this.gdsas= new GDSA();
-        this.ionogras=new Ionogra();
-        this.autreBilans=new AutreBilan();
+        this.bilanrenal=new BilanRenal();
+        this.bilanhepa=new BilanHepa();
+        this.gdsa= new GDSA();
+        this.ionogra=new Ionogra();
+        this.autrebilan=new AutreBilan();
     }
-    public ExamBio(Nfs nfs, BilanRenal bilanRenal, BilanHepa bilanHepa, GDSA gdsas, Ionogra ionogras, AutreBilan autreBilans) {
+    public ExamBio(Nfs nfs, BilanRenal bilanrenal, BilanHepa bilanhepa, GDSA gdsa, Ionogra ionogra, AutreBilan autrebilan) {
         this.nfs = nfs;
-        this.bilanRenal = bilanRenal;
-        this.bilanHepa = bilanHepa;
-        this.gdsas = gdsas;
-        this.ionogras = ionogras;
-        this.autreBilans = autreBilans;
+        this.bilanrenal = bilanrenal;
+        this.bilanhepa = bilanhepa;
+        this.gdsa = gdsa;
+        this.ionogra = ionogra;
+        this.autrebilan = autrebilan;
     }
 
     public Nfs getNfs() {
@@ -35,43 +35,43 @@ public class ExamBio {
         this.nfs = nfs;
     }
 
-    public BilanRenal getBilanRenal() {
-        return bilanRenal;
+    public BilanRenal getBilanrenal() {
+        return bilanrenal;
     }
 
-    public void setBilanRenal(BilanRenal bilanRenal) {
-        this.bilanRenal = bilanRenal;
+    public void setBilanrenal(BilanRenal bilanrenal) {
+        this.bilanrenal = bilanrenal;
     }
 
-    public BilanHepa getBilanHepa() {
-        return bilanHepa;
+    public BilanHepa getBilanhepa() {
+        return bilanhepa;
     }
 
-    public void setBilanHepa(BilanHepa bilanHepa) {
-        this.bilanHepa = bilanHepa;
+    public void setBilanhepa(BilanHepa bilanhepa) {
+        this.bilanhepa = bilanhepa;
     }
 
-    public GDSA getGdsas() {
-        return gdsas;
+    public GDSA getGdsa() {
+        return gdsa;
     }
 
-    public void setGdsas(GDSA gdsas) {
-        this.gdsas = gdsas;
+    public void setGdsa(GDSA gdsa) {
+        this.gdsa = gdsa;
     }
 
-    public Ionogra getIonogras() {
-        return ionogras;
+    public Ionogra getIonogra() {
+        return ionogra;
     }
 
-    public void setIonogras(Ionogra ionogras) {
-        this.ionogras = ionogras;
+    public void setIonogra(Ionogra ionogra) {
+        this.ionogra = ionogra;
     }
 
-    public AutreBilan getAutreBilans() {
-        return autreBilans;
+    public AutreBilan getAutrebilan() {
+        return autrebilan;
     }
 
-    public void setAutreBilans(AutreBilan autreBilans) {
-        this.autreBilans = autreBilans;
+    public void setAutrebilan(AutreBilan autrebilan) {
+        this.autrebilan = autrebilan;
     }
 }

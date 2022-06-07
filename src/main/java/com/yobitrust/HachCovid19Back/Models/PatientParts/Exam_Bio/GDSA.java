@@ -15,6 +15,11 @@ public class GDSA {
     private List<SAO2> sao2s;
 
     public GDSA() {
+        this.phs=new ArrayList<>();
+        this.pao2s=new ArrayList<>();
+        this.paco2s=new ArrayList<>();
+        this.hco3s=new ArrayList<>();
+        this.sao2s=new ArrayList<>();
     }
 
     public GDSA(List<PH> phs, List<PAO2> pao2s, List<PACO2> paco2s, List<HCO3> hco3s, List<SAO2> sao2s) {
